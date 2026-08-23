@@ -17,7 +17,7 @@ public class SlnxCombinerServiceIntegrationTest
     [Fact]
     public async Task Combine_WithTwoSolutions_WritesRelativeProjectsAndRemovesDuplicates()
     {
-        var root = Path.Combine(Path.GetTempPath(), "Slnx-Combiner.Tests", System.Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(Path.GetTempPath(), "SlnxCombiner.Tests", System.Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
         var inputDirectory = Path.Combine(root, "solutions");
         Directory.CreateDirectory(inputDirectory);
@@ -46,7 +46,7 @@ public class SlnxCombinerServiceIntegrationTest
     [Fact]
     public async Task Combine_WhenOutputExtensionIsNotSlnx_WritesTheCorrectedSlnxFile()
     {
-        var root = Path.Combine(Path.GetTempPath(), "Slnx-Combiner.Tests", System.Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(Path.GetTempPath(), "SlnxCombiner.Tests", System.Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
         var inputDirectory = Path.Combine(root, "solutions");
         Directory.CreateDirectory(inputDirectory);

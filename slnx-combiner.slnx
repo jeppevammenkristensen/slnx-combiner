@@ -1,7 +1,7 @@
 <Solution>
   <Folder Name="/src/">
-    <Project Path="src/Slnx-Combiner.Tests/Slnx-Combiner.Tests.csproj" />
-    <Project Path="src/Slnx-Combiner/Slnx-Combiner.csproj" />
+    <Project Path="src/SlnxCombiner.Tests/SlnxCombiner.Tests.csproj" />
+    <Project Path="src/SlnxCombiner/SlnxCombiner.csproj" />
   </Folder>
   <Folder Name="/tests/" />
 </Solution>

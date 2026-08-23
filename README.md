@@ -1,11 +1,17 @@
 # slnx-combiner
 
-`slnx-combiner` is a small .NET CLI that searches a directory and its subdirectories for Visual Studio solution files (`.sln` and `.slnx`) and combines their projects into one XML solution (`.slnx`).
+`slnx-combine` is a .NET tool that searches a directory and its subdirectories for Visual Studio solution files (`.sln` and `.slnx`) and combines their projects into one XML solution (`.slnx`).
+
+## Install
+
+```powershell
+dotnet tool install --global Slnx.Combine --version 0.0.2
+```
 
 ## Usage
 
 ```text
-slnx-combiner <Output> [TraverseDirectory]
+slnx-combine <Output> [TraverseDirectory]
 ```
 
 - `Output` is the generated solution path. If its extension is not `.slnx`, the tool changes it to `.slnx`.
@@ -14,7 +20,7 @@ slnx-combiner <Output> [TraverseDirectory]
 When running the project directly:
 
 ```powershell
-dotnet run --project src/Slnx-Combiner/Slnx-Combiner.csproj -- combined.slnx C:\code\my-repository
+dotnet run --project src/SlnxCombiner/SlnxCombiner.csproj -- combined.slnx C:\code\my-repository
 ```
 
 The output file is excluded from the discovered input solutions, so an existing combined solution can be regenerated in place.
