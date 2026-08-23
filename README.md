@@ -1,25 +1,58 @@
 # slnx-combiner
 
-`slnx-combiner` is a small .NET CLI that combines multiple XML solution (`.slnx`) files into one.
-
-It rebases each project path relative to the output file, merges matching solution folders, and includes duplicate project paths once.
+`slnx-combiner` is a small .NET CLI that searches a directory and its subdirectories for Visual Studio solution files (`.sln` and `.slnx`) and combines their projects into one XML solution (`.slnx`).
 
 ## Usage
 
-```powershell
-dotnet run --project src/SlnxCombiner -- --output combined.slnx team-a.slnx team-b.slnx
+```text
+slnx-combiner <Output> [TraverseDirectory]
 ```
 
-Use `--force` to overwrite an existing output file:
+- `Output` is the generated solution path. If its extension is not `.slnx`, the tool changes it to `.slnx`.
+- `TraverseDirectory` is the directory searched recursively for `.sln` and `.slnx` files. When omitted, the output file's directory is searched.
+
+When running the project directly:
 
 ```powershell
-dotnet run --project src/SlnxCombiner -- --output combined.slnx --force team-a.slnx team-b.slnx
+dotnet run --project src/Slnx-Combiner/Slnx-Combiner.csproj -- combined.slnx C:\code\my-repository
 ```
 
-Only `.slnx` files are accepted as inputs and output.
+The output file is excluded from the discovered input solutions, so an existing combined solution can be regenerated in place.
+
+## How the combined solution is generated
+
+For every discovered solution, the tool:
+
+1. Reads all of its projects.
+2. Resolves project paths relative to that input solution.
+3. Rewrites the paths relative to the generated output file.
+4. Places the projects in a solution folder named after the input solution file.
+
+If multiple input solutions have the same filename, their generated folder names receive suffixes such as `_1` and `_2`. A project referenced by more than one solution is emitted only once, directly under the root of the combined solution. Project display names and project type metadata are preserved when present.
+
+For example, combining `Api.slnx` and `Worker.sln`, which both reference `Shared.csproj`, produces a structure similar to:
+
+```xml
+<Solution>
+  <!--Projects that where duplicates-->
+  <Project Path="src/Shared/Shared.csproj" />
+
+  <!--Folder: solutions/Api.slnx-->
+  <Folder Name="/Api/">
+    <Project Path="src/Api/Api.csproj" />
+  </Folder>
+
+  <!--Folder: solutions/Worker.sln-->
+  <Folder Name="/Worker/">
+    <Project Path="src/Worker/Worker.csproj" />
+  </Folder>
+</Solution>
+```
+
+The exact relative paths depend on the locations of the input solutions, projects, and output file.
 
 ## Build and test
 
 ```powershell
-dotnet test
+dotnet test slnx-combiner.slnx
 ```
