@@ -25,7 +25,7 @@ public class SlnxCombinerService
             _console.MarkupLineInterpolated(
                 $"File extension must be .slnx. Found {destination.GetExtensionWithoutDot()}. Changed to .slnx");
             destination = destination / ".." /
-                          $"{destination.GetFilenameWithoutExtension()}{destination.GetExtensionWithDot()}";
+                          $"{destination.GetFilenameWithoutExtension()}.slnx";
         }
 
         var solutionFiles = FindSolutionFiles(settings.TraversePath, destination);
