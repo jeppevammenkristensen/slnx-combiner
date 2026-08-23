@@ -5,17 +5,30 @@ using FileBasedApp.Toolkit;
 using Spectre.Console;
 using TruePath;
 
+/// <summary>
+/// Discovers solution files and combines their projects into a generated SLNX document.
+/// </summary>
 public class SlnxCombinerService
 {
     private readonly IFileSystem _fileSystem;
     private readonly IAnsiConsole _console;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SlnxCombinerService"/> class.
+    /// </summary>
+    /// <param name="fileSystem">The file system used to discover and write solution files.</param>
+    /// <param name="console">The console used to report changes to the requested output path.</param>
     public SlnxCombinerService(IFileSystem fileSystem, IAnsiConsole console)
     {
         _fileSystem = fileSystem;
         _console = console;
     }
 
+    /// <summary>
+    /// Combines projects from the configured directory into the requested SLNX output file.
+    /// </summary>
+    /// <param name="settings">The validated command settings that define the input directory and output file.</param>
+    /// <param name="cancellationToken">A token that can cancel writing the generated file.</param>
     public async Task Combine(RunCommand.Settings settings, CancellationToken cancellationToken)
     {
         var destination = settings.OutputFilePath;
@@ -132,18 +145,42 @@ public class SlnxCombinerService
     }
 }
 
+/// <summary>
+/// Describes a project entry read from a solution file.
+/// </summary>
+/// <param name="ProjectPath">The absolute path to the project file.</param>
+/// <param name="DisplayName">The optional display name stored in the solution.</param>
+/// <param name="Type">The optional project type stored in the solution.</param>
 public record ProjectReference(AbsolutePath ProjectPath, string? DisplayName, string? Type);
 
+/// <summary>
+/// Groups the projects contributed by one source solution.
+/// </summary>
 public class SolutionWrapper
 {
+    /// <summary>
+    /// Gets the path of the source solution, or <see langword="null"/> for a synthetic group.
+    /// </summary>
     public AbsolutePath? SolutionFile { get; }
 
     private ImmutableDictionary<AbsolutePath, ProjectReference> ProjectPaths { get; set; }
 
+    /// <summary>
+    /// Gets the projects currently assigned to the group.
+    /// </summary>
     public IEnumerable<ProjectReference> Projects => ProjectPaths.Values;
 
+    /// <summary>
+    /// Gets a value indicating whether the group contains no projects.
+    /// </summary>
     public bool Empty => ProjectPaths.Count == 0;
 
+    /// <summary>
+    /// Initializes a new project group for a source solution.
+    /// </summary>
+    /// <param name="name">The solution-folder name used in the combined output.</param>
+    /// <param name="solutionFile">The source solution path, or <see langword="null"/> for a synthetic group.</param>
+    /// <param name="projectFiles">The projects initially assigned to the group.</param>
     public SolutionWrapper(string name, AbsolutePath? solutionFile, IEnumerable<ProjectReference> projectFiles)
     {
         Name = name;
@@ -151,15 +188,35 @@ public class SolutionWrapper
         ProjectPaths = projectFiles.ToImmutableDictionary(x => x.ProjectPath);
     }
 
+    /// <summary>
+    /// Gets the solution-folder name used in the combined output.
+    /// </summary>
     public string Name { get; private set; }
 
+    /// <summary>
+    /// Determines whether the group contains the specified project path.
+    /// </summary>
+    /// <param name="projectFile">The absolute project path to locate.</param>
+    /// <returns><see langword="true"/> when the project belongs to the group; otherwise, <see langword="false"/>.</returns>
     public bool Contains(AbsolutePath projectFile) => ProjectPaths.ContainsKey(projectFile);
 
+    /// <summary>
+    /// Removes the project with the specified path from the group.
+    /// </summary>
+    /// <param name="projectFile">The absolute path of the project to remove.</param>
     public void Remove(AbsolutePath projectFile) => ProjectPaths = ProjectPaths.Remove(projectFile);
 
+    /// <summary>
+    /// Removes the specified project references from the group.
+    /// </summary>
+    /// <param name="duplicates">The project references to remove.</param>
     public void Remove(IEnumerable<ProjectReference> duplicates) =>
         ProjectPaths = ProjectPaths.RemoveRange(duplicates.Select(x => x.ProjectPath));
 
+    /// <summary>
+    /// Adds the specified project references to the group.
+    /// </summary>
+    /// <param name="duplicates">The project references to add.</param>
     public void AddRange(IEnumerable<ProjectReference> duplicates)
     {
         ProjectPaths = ProjectPaths.AddRange(duplicates.ToImmutableDictionary(x => x.ProjectPath));

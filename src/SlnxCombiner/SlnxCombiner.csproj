@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <PackAsTool>true</PackAsTool>
+    <PackageId>Slnx.Combine</PackageId>
+    <Title>SLNX Combine</Title>
+    <Authors>Jeppe Roi Kristensen</Authors>
+    <Description>Combine projects from multiple .sln and .slnx files into a single XML solution.</Description>
+    <PackageTags>dotnet-tool;solution;sln;slnx;visual-studio</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/jeppevammenkristensen/slnx-combiner</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/jeppevammenkristensen/slnx-combiner.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>slnx-combine.png</PackageIcon>
+    <Copyright>Copyright (c) 2026 Jeppe Roi Kristensen</Copyright>
+    <ToolCommandName>slnx-combine</ToolCommandName>
+    <VersionPrefix>0.0.2</VersionPrefix>
+    <VersionSuffix Condition="'$(Configuration)' == 'Debug'">dev-01</VersionSuffix>
+    <PublishAot>false</PublishAot>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+    <None Include="..\..\assets\slnx-combine.png" Pack="true" PackagePath="\" />
+    <PackageReference Include="FileBasedApp.Toolkit" Version="0.21.0" />
+    <PackageReference Include="Microsoft.VisualStudio.SolutionPersistence" Version="1.0.52" />
+    <PackageReference Include="TruePath.TestableIO.System.IO" Version="0.16.1" />
+  </ItemGroup>
+
+</Project>
