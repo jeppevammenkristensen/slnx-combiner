@@ -1,5 +1,7 @@
 # slnx-combiner
 
+[![Slnx.Combine](https://img.shields.io/nuget/v/Slnx.Combine.svg?style=flat-square&label=Slnx.Combine)](https://www.nuget.org/packages/Slnx.Combine)
+
 `slnx-combine` is a .NET tool that searches a directory and its subdirectories for Visual Studio solution files (`.sln` and `.slnx`) and combines their projects into one XML solution (`.slnx`).
 
 ## Install
