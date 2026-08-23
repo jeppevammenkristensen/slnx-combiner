@@ -13,7 +13,7 @@ public class SlnFolderBuilderTest
     public void Build_WhenFolderContainsNoProjects_AddsNormalizedEmptyFolder()
     {
         var solution = new XElement("Solution");
-        var folder = new SlnFolderBuilder("/Applications/", TestPaths.Absolute("repository"));
+        var folder = new SlnFolderBuilder("/Applications/", TestPaths.Absolute("repository"), null);
 
         folder.Build(solution);
 
@@ -26,7 +26,7 @@ public class SlnFolderBuilderTest
     public void Build_WithProjects_AddsRelativePathsAndOnlyProvidedMetadata()
     {
         var solution = new XElement("Solution");
-        var folder = new SlnFolderBuilder("Applications", TestPaths.Absolute("repository"));
+        var folder = new SlnFolderBuilder("Applications", TestPaths.Absolute("repository"), null);
         folder.AddProject(
                 TestPaths.Absolute("repository", "src", "App", "App.csproj"),
                 "Application",
