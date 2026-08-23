@@ -20,7 +20,7 @@
     <PackageIcon>slnx-combine.png</PackageIcon>
     <Copyright>Copyright (c) 2026 Jeppe Roi Kristensen</Copyright>
     <ToolCommandName>slnx-combine</ToolCommandName>
-    <VersionPrefix>0.0.3</VersionPrefix>
+    <VersionPrefix>0.0.4</VersionPrefix>
     <VersionSuffix Condition="'$(Configuration)' == 'Debug'">dev-01</VersionSuffix>
     <PublishAot>false</PublishAot>
   </PropertyGroup>

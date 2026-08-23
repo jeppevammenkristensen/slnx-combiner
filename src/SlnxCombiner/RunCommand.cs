@@ -29,11 +29,13 @@ public class RunCommand : AsyncCommand<RunCommand.Settings> // For sync only you
         /// Gets or sets the requested output file supplied on the command line.
         /// </summary>
         [CommandArgument(0, "<Output>")]
+        [DisplayName("The output file to write the combined solution to.")]
         public string? OutputFile { get; set; }
 
         /// <summary>
         /// Gets the validated absolute path of the output file.
         /// </summary>
+        [DisplayName("The validated absolute path of the output file.")]
         public AbsolutePath OutputFilePath { get; internal set; }
         
         /// <summary>
@@ -51,6 +53,7 @@ public class RunCommand : AsyncCommand<RunCommand.Settings> // For sync only you
         /// <summary>
         /// Gets the validated absolute path of the directory searched for solution files.
         /// </summary>
+        [DisplayName("The validated absolute path of the directory searched for solution files.")]
         public AbsolutePath TraversePath { get; internal set; }
 
         protected override ValidationResult DoValidate()
@@ -58,6 +61,11 @@ public class RunCommand : AsyncCommand<RunCommand.Settings> // For sync only you
             // Exceptions here will bubble up and outputted as validation		
             // This will evaluate the path. If the path is relative, it will relative (in this case) against the execution folder. That would be the
             // directory that this .cs lives in
+            if (string.IsNullOrWhiteSpace(OutputFile))
+            {
+                throw new ArgumentException("An output file is required.", nameof(OutputFile));
+            }
+
             OutputFilePath = this.TryGetFile(OutputFile, shouldExist: false, PredefinedRootPath.CurrentDirectory);
             
             if (!string.IsNullOrWhiteSpace(TraverseDirectory))
