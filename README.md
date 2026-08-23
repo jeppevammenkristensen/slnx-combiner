@@ -7,7 +7,7 @@
 ## Install
 
 ```powershell
-dotnet tool install --global Slnx.Combine --version 0.0.2
+dotnet tool install --global Slnx.Combine --version 0.0.5
 ```
 
 ## Usage
