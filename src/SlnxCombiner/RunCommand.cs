@@ -29,31 +29,29 @@ public class RunCommand : AsyncCommand<RunCommand.Settings> // For sync only you
         /// Gets or sets the requested output file supplied on the command line.
         /// </summary>
         [CommandArgument(0, "<Output>")]
-        [DisplayName("The output file to write the combined solution to.")]
+        [Description("The output file to write the combined solution to.")]
         public string? OutputFile { get; set; }
 
         /// <summary>
         /// Gets the validated absolute path of the output file.
         /// </summary>
-        [DisplayName("The validated absolute path of the output file.")]
         public AbsolutePath OutputFilePath { get; internal set; }
         
         /// <summary>
         /// Gets or sets the optional directory to search for solution files.
         /// </summary>
-        [CommandArgument(0, "[TraverseDirectory]")]
-        [DisplayName("The directory to traverse for solution files. This is not necesarrily the same as the output directory.")]
+        [CommandArgument(1, "[TraverseDirectory]")]
+        [Description("The directory to traverse for solution files. This is not necessarily the same as the output directory.")]
         public string? TraverseDirectory { get; set; }
         
         [CommandOption("--overwrite")]
-        [DisplayName("If toggled the output file will be overwritten if it already exists.")]
+        [Description("If toggled the output file will be overwritten if it already exists.")]
         public bool Overwrite { get; set; }
         
         
         /// <summary>
         /// Gets the validated absolute path of the directory searched for solution files.
         /// </summary>
-        [DisplayName("The validated absolute path of the directory searched for solution files.")]
         public AbsolutePath TraversePath { get; internal set; }
 
         protected override ValidationResult DoValidate()
