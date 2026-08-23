@@ -41,14 +41,30 @@ public class SlnxCombinerService
                           $"{destination.GetFilenameWithoutExtension()}.slnx";
         }
 
+        if (!settings.Overwrite && _fileSystem.File.Exists(destination.Value))
+        {
+            throw new InvalidOperationException($"Output file already exists: {destination}. Set --overwrite to overwrite the file.");
+        }
+
         var solutionFiles = FindSolutionFiles(settings.TraversePath, destination);
         if (solutionFiles.Length == 0)
         {
-            throw new InvalidOperationException("No solution files found in this direcotry or it's subdirectories");
+            throw new InvalidOperationException("No solution files found in this directory or it's subdirectories");
         }
+
+        OutputSolutionFiles(solutionFiles);
 
         var buildSlnx = await BuildSlnx(solutionFiles, destination / "..");
         await BuildFileFromBuilder(buildSlnx, destination, cancellationToken);
+    }
+
+    private void OutputSolutionFiles(AbsolutePath[] solutionFiles)
+    {
+        _console.MarkupLineInterpolated($"[green]Found {solutionFiles.Length} solution files[/]");
+        foreach (var solutionFile in solutionFiles)
+        {
+            _console.MarkupLineInterpolated($"[dim]{solutionFile.Value}[/]");
+        }
     }
 
     private async Task BuildFileFromBuilder(SlnxBuilder buildSlnx, AbsolutePath destination,
@@ -65,14 +81,17 @@ public class SlnxCombinerService
         var builder = new SlnxBuilder(root);
 
         HashSet<string> names = new HashSet<string>();
-        var processed = FindDuplicates(await ProcessSolution(solutionFiles, root, names).ToListAsync());
+        var processed = ConsolidateDuplicateProjects(await ProcessSolution(solutionFiles, root, names).ToListAsync());
 
         await ProcessSolutionIt(builder, processed);
 
         return builder;
     }
 
-    private ImmutableArray<SolutionWrapper> FindDuplicates(List<SolutionWrapper> solutionWrappers)
+    /// <summary>
+    /// Moves projects included by multiple source solutions into a shared synthetic group.
+    /// </summary>
+    private ImmutableArray<SolutionWrapper> ConsolidateDuplicateProjects(List<SolutionWrapper> solutionWrappers)
     {
         var solutionWrapper = new SolutionWrapper("", null, []);
 
@@ -81,6 +100,13 @@ public class SlnxCombinerService
             .Where(x => x.Count() > 1)
             .Select(x => x.First())
             .ToList();
+        
+        _console.MarkupLineInterpolated($"[green]Found the following projects referenced in multiple solutions: [/]");
+
+        foreach (var duplicate in duplicates)
+        {
+            _console.MarkupLineInterpolated($"[dim]{duplicate.ProjectPath.Value}[/]");
+        }
 
         solutionWrapper.AddRange(duplicates);
 

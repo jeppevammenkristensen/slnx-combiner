@@ -15,6 +15,7 @@ public class RunCommand : AsyncCommand<RunCommand.Settings> // For sync only you
     {
         var slnxCombinerService = new SlnxCombinerService(new FileSystem(), AnsiConsole.Console);
         await slnxCombinerService.Combine(settings, cancellationToken);
+        AnsiConsole.MarkupLine($"[green]Combined solution files into {settings.OutputFilePath}[/]");
 
         return 0; // 0 for success
     }
@@ -41,6 +42,11 @@ public class RunCommand : AsyncCommand<RunCommand.Settings> // For sync only you
         [CommandArgument(0, "[TraverseDirectory]")]
         [DisplayName("The directory to traverse for solution files. This is not necesarrily the same as the output directory.")]
         public string? TraverseDirectory { get; set; }
+        
+        [CommandOption("--overwrite")]
+        [DisplayName("If toggled the output file will be overwritten if it already exists.")]
+        public bool Overwrite { get; set; }
+        
         
         /// <summary>
         /// Gets the validated absolute path of the directory searched for solution files.

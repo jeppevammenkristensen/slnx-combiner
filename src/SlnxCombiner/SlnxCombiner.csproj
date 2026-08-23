@@ -16,10 +16,11 @@
     <RepositoryUrl>https://github.com/jeppevammenkristensen/slnx-combiner.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageReleaseNotes>Add --overwrite flag to ensure no unintentional overwrite of existing slnx file. Added version. Better output when combing</PackageReleaseNotes>
     <PackageIcon>slnx-combine.png</PackageIcon>
     <Copyright>Copyright (c) 2026 Jeppe Roi Kristensen</Copyright>
     <ToolCommandName>slnx-combine</ToolCommandName>
-    <VersionPrefix>0.0.2</VersionPrefix>
+    <VersionPrefix>0.0.3</VersionPrefix>
     <VersionSuffix Condition="'$(Configuration)' == 'Debug'">dev-01</VersionSuffix>
     <PublishAot>false</PublishAot>
   </PropertyGroup>
