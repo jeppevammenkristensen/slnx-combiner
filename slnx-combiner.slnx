@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/src-fart/">
+    <Project Path="src/Slnx-Combiner.Tests/Slnx-Combiner.Tests.csproj" />
+    <Project Path="src/Slnx-Combiner/Slnx-Combiner.csproj" />
+  </Folder>
+  <Folder Name="/tests/" />
+</Solution>
