@@ -19,10 +19,16 @@ slnx-combine <Output> [TraverseDirectory]
 - `Output` is the generated solution path. If its extension is not `.slnx`, the tool changes it to `.slnx`.
 - `TraverseDirectory` is the directory searched recursively for `.sln` and `.slnx` files. When omitted, the output file's directory is searched.
 
+When installed as a global .NET tool from NuGet:
+
+```powershell
+slnx-combine combined.slnx C:\code\my-repository
+```
+
 When running the project directly:
 
 ```powershell
-dotnet run --project src/SlnxCombiner/SlnxCombiner.csproj -- combined.slnx C:\code\my-repository
+dotnet run --project src/SlnxCombiner/SlnxCombiner.csproj combined.slnx C:\code\my-repository
 ```
 
 The output file is excluded from the discovered input solutions, so an existing combined solution can be regenerated in place.
