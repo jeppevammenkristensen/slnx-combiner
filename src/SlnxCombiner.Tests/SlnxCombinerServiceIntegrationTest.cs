@@ -26,13 +26,13 @@ public class SlnxCombinerServiceIntegrationTest
         File.WriteAllText(Path.Combine(inputDirectory, "team-a.slnx"), Solution("/TeamA/", "src/App/App.csproj"));
         File.WriteAllText(Path.Combine(inputDirectory, "team-b.slnx"), Solution("/TeamB/", "src/App/App.csproj", "tests/App.Tests/App.Tests.csproj"));
 
-        var service = new SlnxCombinerService(new FileSystem(), Spectre.Console.AnsiConsole.Create(
-            new Spectre.Console.AnsiConsoleSettings { Interactive = Spectre.Console.InteractionSupport.No }));
+        var service = new SlnxCombinerService(new FileSystem(), AnsiConsole.Create(
+            new AnsiConsoleSettings { Interactive = InteractionSupport.No }));
 
         await service.Combine(new RunCommand.Settings
         {
             OutputFilePath = AbsolutePath.Create(output),
-            TraversePath = AbsolutePath.Create(inputDirectory),
+            TraversePath = [AbsolutePath.Create(inputDirectory)],
         }, CancellationToken.None);
 
         var document = XDocument.Load(output);
@@ -59,7 +59,7 @@ public class SlnxCombinerServiceIntegrationTest
         await service.Combine(new RunCommand.Settings
         {
             OutputFilePath = requestedOutput,
-            TraversePath = AbsolutePath.Create(inputDirectory),
+            TraversePath = [AbsolutePath.Create(inputDirectory)],
         }, CancellationToken.None);
 
         Assert.True(File.Exists(Path.Combine(root, "combined.slnx")));
