@@ -46,7 +46,7 @@ public class SlnxCombinerService
             throw new InvalidOperationException($"Output file already exists: {destination}. Set --overwrite to overwrite the file.");
         }
 
-        var solutionFiles = FindSolutionFiles(settings.TraversePath, destination);
+        var solutionFiles = settings.TraversePath.SelectMany(path => FindSolutionFiles(path, destination)).Distinct().ToArray();
         if (solutionFiles.Length == 0)
         {
             throw new InvalidOperationException("No solution files found in this directory or it's subdirectories");
