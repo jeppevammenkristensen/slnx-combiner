@@ -29,7 +29,7 @@ public class SlnxCombinerServiceIntegrationTest
         var service = new SlnxCombinerService(new FileSystem(), AnsiConsole.Create(
             new AnsiConsoleSettings { Interactive = InteractionSupport.No }));
 
-        await service.Combine(new RunCommand.Settings
+        await service.Combine(new CombineCommand.Settings
         {
             OutputFilePath = AbsolutePath.Create(output),
             TraversePath = [AbsolutePath.Create(inputDirectory)],
@@ -56,7 +56,7 @@ public class SlnxCombinerServiceIntegrationTest
             new AnsiConsoleSettings { Interactive = InteractionSupport.No }));
         var requestedOutput = AbsolutePath.Create(Path.Combine(root, "combined.txt"));
 
-        await service.Combine(new RunCommand.Settings
+        await service.Combine(new CombineCommand.Settings
         {
             OutputFilePath = requestedOutput,
             TraversePath = [AbsolutePath.Create(inputDirectory)],

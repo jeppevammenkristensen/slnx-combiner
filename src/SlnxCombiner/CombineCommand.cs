@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using FileBasedApp.Toolkit;
 using FileBasedApp.Toolkit.CommandCli;
+using JetBrains.Annotations;
 using Spectre.Console;
 using Spectre.Console.Cli;
 using TruePath;
@@ -12,7 +13,8 @@ using FileSystem = System.IO.Abstractions.FileSystem;
 /// <summary>
 /// Runs the command-line workflow that combines discovered solution files into a single SLNX file.
 /// </summary>
-public class RunCommand : AsyncCommand<RunCommand.Settings> // For sync only you can use Command (and have Execute instead of ExecuteAsync
+[UsedImplicitly]
+public class CombineCommand : AsyncCommand<CombineCommand.Settings> // For synchronous commands, use Command and Execute instead of ExecuteAsync.
 {
     protected override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
@@ -49,16 +51,16 @@ public class RunCommand : AsyncCommand<RunCommand.Settings> // For sync only you
         public string[]? TraverseDirectory { get; set; } = [];
         
         [CommandOption("--overwrite")]
-        [Description("If toggled the output file will be overwritten if it already exists.")]
+        [Description("If set, the output file will be overwritten if it already exists.")]
         public bool Overwrite { get; set; }
         
         [CommandOption("--include")]
-        [Description("If set this will be the regex filter applied to the solution/project file name.")]
-        public string? Include { get;set; }
+        [Description("If set, this regular expression will include matching solution/project file names.")]
+        public string? Include { get; set; }
         
-        [CommandOption("--exlude")]
-        [Description("If set this will be the regex filter applied to filter away a solution/project file name.")]
-        public string? Exclude { get;set; }
+        [CommandOption("--exclude")]
+        [Description("If set, this regular expression will exclude matching solution/project file names.")]
+        public string? Exclude { get; set; }
 
         public Regex? IncludeRegex { get; private set; }
         public Regex? ExcludeRegex { get; private set; }
@@ -71,9 +73,8 @@ public class RunCommand : AsyncCommand<RunCommand.Settings> // For sync only you
 
         protected override ValidationResult DoValidate()
         {
-            // Exceptions here will bubble up and outputted as validation		
-            // This will evaluate the path. If the path is relative, it will relative (in this case) against the execution folder. That would be the
-            // directory that this .cs lives in
+            // Exceptions thrown here will be displayed as validation errors.
+            // Relative paths are resolved against the current working directory.
             if (string.IsNullOrWhiteSpace(OutputFile))
             {
                 throw new ArgumentException("An output file is required.", nameof(OutputFile));

@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Slnx_Combiner.Tests;
 
-[TestSubject(typeof(RunCommand.Settings))]
+[TestSubject(typeof(CombineCommand.Settings))]
 public class RunCommandSettingsTest
 {
     [Fact]
@@ -56,7 +56,7 @@ public class RunCommandSettingsTest
         };
     }
 
-    private sealed class TestSettings : RunCommand.Settings
+    private sealed class TestSettings : CombineCommand.Settings
     {
         public ValidationResult ValidateSettings() => DoValidate();
     }

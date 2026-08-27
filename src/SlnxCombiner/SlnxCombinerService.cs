@@ -29,7 +29,7 @@ public class SlnxCombinerService
     /// </summary>
     /// <param name="settings">The validated command settings that define the input directory and output file.</param>
     /// <param name="cancellationToken">A token that can cancel writing the generated file.</param>
-    public async Task Combine(RunCommand.Settings settings, CancellationToken cancellationToken)
+    public async Task Combine(CombineCommand.Settings settings, CancellationToken cancellationToken)
     {
         var destination = settings.OutputFilePath;
 
@@ -161,7 +161,7 @@ public class SlnxCombinerService
 
 
     private AbsolutePath[] FindSolutionFiles(AbsolutePath destinationDirectory, AbsolutePath existingFile,
-        RunCommand.Settings settings)
+        CombineCommand.Settings settings)
     {
         var includeFilter = GenerateIncludeFilter(settings);
         var excludeFilter = GenerateExcludeFilter(settings);
@@ -176,7 +176,7 @@ public class SlnxCombinerService
         ];
     }
 
-    internal static Func<AbsolutePath, bool> GenerateExcludeFilter(RunCommand.Settings settings)
+    internal static Func<AbsolutePath, bool> GenerateExcludeFilter(CombineCommand.Settings settings)
     {
         if (settings.ExcludeRegex is not {} regex)
             return _ => true;
@@ -184,7 +184,7 @@ public class SlnxCombinerService
         return x => !regex.IsMatch(x.GetFilenameWithoutExtension());
     }
 
-    internal static Func<AbsolutePath, bool> GenerateIncludeFilter(RunCommand.Settings settings)
+    internal static Func<AbsolutePath, bool> GenerateIncludeFilter(CombineCommand.Settings settings)
     {
         if (settings.IncludeRegex is not {} regex)
             return _ => true;
