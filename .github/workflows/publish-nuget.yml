@@ -1,0 +1,70 @@
+name: Publish NuGet package
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Package version to publish (for example, 0.0.6)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-nuget
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Test, pack, and publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Validate configuration
+        shell: bash
+        env:
+          NUGET_USER: ${{ vars.NUGET_USER }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          if [[ -z "$NUGET_USER" ]]; then
+            echo "Set the NUGET_USER repository variable to your nuget.org username." >&2
+            exit 1
+          fi
+
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([-.][0-9A-Za-z.-]+)?$ ]]; then
+            echo "Version '$VERSION' is not a valid package version." >&2
+            exit 1
+          fi
+
+      - name: Restore
+        run: dotnet restore slnx-combiner.slnx
+
+      - name: Test
+        run: dotnet test slnx-combiner.slnx --configuration Release --no-restore
+
+      - name: Pack
+        env:
+          VERSION: ${{ inputs.version }}
+        run: dotnet pack src/SlnxCombiner/SlnxCombiner.csproj --configuration Release --no-restore --output artifacts -p:Version="$VERSION"
+
+      - name: Log in to NuGet with OIDC
+        id: nuget-login
+        uses: NuGet/login@v1
+        with:
+          user: ${{ vars.NUGET_USER }}
+
+      - name: Publish package
+        run: dotnet nuget push artifacts/*.nupkg --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json
