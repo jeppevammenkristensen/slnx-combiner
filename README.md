@@ -101,3 +101,13 @@ The exact relative paths depend on the locations of the input solutions, project
 ```powershell
 dotnet test slnx-combiner.slnx
 ```
+
+## Publish
+
+Releases are published manually through the **Publish NuGet package** GitHub Actions workflow using NuGet trusted publishing. Before the first release:
+
+1. Add a nuget.org trusted publishing policy with repository owner `jeppevammenkristensen`, repository `slnx-combiner`, workflow file `publish-nuget.yml`, and no environment.
+2. Ensure the GitHub Actions repository variable `NUGET_USER` is set to the package owner's nuget.org profile username (`jeppev`).
+3. Open **Actions**, select **Publish NuGet package**, choose **Run workflow**, and enter the package version to publish.
+
+The workflow tests the solution, packs the requested version, exchanges GitHub's OIDC token for a short-lived NuGet API key, and publishes the package without a stored API-key secret.
