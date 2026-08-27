@@ -13,6 +13,50 @@ namespace Slnx_Combiner.Tests;
 [TestSubject(typeof(SlnxCombinerService))]
 public class SlnxCombinerServiceTest
 {
+    [Theory]
+    [InlineData("team-app.slnx", true)]
+    [InlineData("TEAM-APP.sln", true)]
+    [InlineData("other-app.slnx", false)]
+    public void GenerateIncludeFilter_WithConfiguredRegex_FiltersByFilenameWithoutExtension(
+        string fileName, bool expected)
+    {
+        var settings = CreateValidatedSettings(include: "^team-app$");
+
+        var filter = SlnxCombinerService.GenerateIncludeFilter(settings);
+
+        Assert.Equal(expected, filter(TestPaths.Absolute(fileName)));
+    }
+
+    [Theory]
+    [InlineData("team-app.slnx", false)]
+    [InlineData("TEAM-APP.sln", false)]
+    [InlineData("other-app.slnx", true)]
+    public void GenerateExcludeFilter_WithConfiguredRegex_FiltersByFilenameWithoutExtension(
+        string fileName, bool expected)
+    {
+        var settings = CreateValidatedSettings(exclude: "^team-app$");
+
+        var filter = SlnxCombinerService.GenerateExcludeFilter(settings);
+
+        Assert.Equal(expected, filter(TestPaths.Absolute(fileName)));
+    }
+
+    [Fact]
+    public void GenerateIncludeFilter_WithoutConfiguredRegex_IncludesPath()
+    {
+        var filter = SlnxCombinerService.GenerateIncludeFilter(new RunCommand.Settings());
+
+        Assert.True(filter(TestPaths.Absolute("solution.slnx")));
+    }
+
+    [Fact]
+    public void GenerateExcludeFilter_WithoutConfiguredRegex_IncludesPath()
+    {
+        var filter = SlnxCombinerService.GenerateExcludeFilter(new RunCommand.Settings());
+
+        Assert.True(filter(TestPaths.Absolute("solution.slnx")));
+    }
+
     [Fact]
     public async Task Combine_WhenNoSolutionFilesExist_Throws()
     {
@@ -60,5 +104,23 @@ public class SlnxCombinerServiceTest
             OutputFilePath = outputFilePath,
             TraversePath = [traversePath],
         };
+    }
+
+    private static TestSettings CreateValidatedSettings(string include = null, string exclude = null)
+    {
+        var settings = new TestSettings
+        {
+            OutputFile = TestPaths.Absolute("combined.slnx").Value,
+            Include = include,
+            Exclude = exclude,
+        };
+
+        Assert.True(settings.ValidateSettings().Successful);
+        return settings;
+    }
+
+    private sealed class TestSettings : RunCommand.Settings
+    {
+        public ValidationResult ValidateSettings() => DoValidate();
     }
 }
