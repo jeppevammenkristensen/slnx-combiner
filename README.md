@@ -2,27 +2,58 @@
 
 [![Slnx.Combine](https://img.shields.io/nuget/v/Slnx.Combine.svg?style=flat-square&label=Slnx.Combine)](https://www.nuget.org/packages/Slnx.Combine)
 
-`slnx-combine` is a .NET tool that searches a directory and its subdirectories for Visual Studio solution files (`.sln` and `.slnx`) and combines their projects into one XML solution (`.slnx`).
+`slnx-combine` is a .NET tool that searches one or more directories and their subdirectories for Visual Studio solution files (`.sln` and `.slnx`) and combines their projects into one XML solution (`.slnx`).
 
 ## Install
 
 ```powershell
-dotnet tool install --global Slnx.Combine --version 0.0.5
+dotnet tool install --global Slnx.Combine
 ```
 
 ## Usage
 
 ```text
-slnx-combine <Output> [TraverseDirectory]
+slnx-combine <Output> [TraverseDirectory ...] [OPTIONS]
+slnx-combine combine <Output> [TraverseDirectory ...] [OPTIONS]
 ```
 
 - `Output` is the generated solution path. If its extension is not `.slnx`, the tool changes it to `.slnx`.
-- `TraverseDirectory` is the directory searched recursively for `.sln` and `.slnx` files. When omitted, the output file's directory is searched.
+- `TraverseDirectory` is a directory searched recursively for `.sln` and `.slnx` files. Supply multiple directories to search all of them. When omitted, the output file's directory is searched.
+
+### Options
+
+| Option | Description |
+| --- | --- |
+| `--overwrite` | Overwrite the output file if it already exists. |
+| `--include <REGEX>` | Include only solution filenames that match the regular expression. |
+| `--exclude <REGEX>` | Exclude solution filenames that match the regular expression. |
+
+Include and exclude expressions are case-insensitive and match the filename without its extension. Invalid expressions are reported before file discovery starts. The filters can be combined: inclusion is applied first, followed by exclusion.
+
+### Examples
 
 When installed as a global .NET tool from NuGet:
 
 ```powershell
 slnx-combine combined.slnx C:\code\my-repository
+```
+
+Search multiple directories:
+
+```powershell
+slnx-combine combined.slnx C:\code\services C:\code\libraries
+```
+
+Include solution names beginning with `Team-`, but exclude names ending in `-Tests`:
+
+```powershell
+slnx-combine combined.slnx C:\code\my-repository --include '^Team-' --exclude '-Tests$'
+```
+
+The combine workflow can also be invoked through the explicit `combine` command:
+
+```powershell
+slnx-combine combine combined.slnx C:\code\my-repository
 ```
 
 When running the project directly:
@@ -31,7 +62,7 @@ When running the project directly:
 dotnet run --project src/SlnxCombiner/SlnxCombiner.csproj -- combined.slnx C:\code\my-repository
 ```
 
-The output file is excluded from the discovered input solutions, so an existing combined solution can be regenerated in place.
+The output file is excluded from the discovered input solutions. Files found through overlapping traversal directories are de-duplicated before they are combined. To regenerate an existing combined solution in place, pass `--overwrite`.
 
 ## How the combined solution is generated
 
@@ -48,7 +79,7 @@ For example, combining `Api.slnx` and `Worker.sln`, which both reference `Shared
 
 ```xml
 <Solution>
-  <!--Projects that where duplicates-->
+  <!--Projects that were duplicates-->
   <Project Path="src/Shared/Shared.csproj" />
 
   <!--Folder: solutions/Api.slnx-->
