@@ -46,7 +46,7 @@ public class SlnxCombinerService
             throw new InvalidOperationException($"Output file already exists: {destination}. Set --overwrite to overwrite the file.");
         }
 
-        var solutionFiles = settings.TraversePath.SelectMany(path => FindSolutionFiles(path, destination)).Distinct().ToArray();
+        var solutionFiles = settings.TraversePath.SelectMany(path => FindSolutionFiles(path, destination, settings)).Distinct().ToArray();
         if (solutionFiles.Length == 0)
         {
             throw new InvalidOperationException("No solution files found in this directory or it's subdirectories");
@@ -160,14 +160,36 @@ public class SlnxCombinerService
     }
 
 
-    private AbsolutePath[] FindSolutionFiles(AbsolutePath destinationDirectory, AbsolutePath existingFile)
+    private AbsolutePath[] FindSolutionFiles(AbsolutePath destinationDirectory, AbsolutePath existingFile,
+        RunCommand.Settings settings)
     {
+        var includeFilter = GenerateIncludeFilter(settings);
+        var excludeFilter = GenerateExcludeFilter(settings);
+
         return
         [
             .. destinationDirectory.GetAllFiles("*.slnx", _fileSystem)
                 .Concat(destinationDirectory.GetAllFiles("*.sln", _fileSystem))
+                .Where(includeFilter)
+                .Where(excludeFilter)
                 .Where(x => !x.Equals(existingFile))
         ];
+    }
+
+    internal static Func<AbsolutePath, bool> GenerateExcludeFilter(RunCommand.Settings settings)
+    {
+        if (settings.ExcludeRegex is not {} regex)
+            return _ => true;
+
+        return x => !regex.IsMatch(x.GetFilenameWithoutExtension());
+    }
+
+    internal static Func<AbsolutePath, bool> GenerateIncludeFilter(RunCommand.Settings settings)
+    {
+        if (settings.IncludeRegex is not {} regex)
+            return _ => true;
+
+        return x => regex.IsMatch(x.GetFilenameWithoutExtension());
     }
 }
 
