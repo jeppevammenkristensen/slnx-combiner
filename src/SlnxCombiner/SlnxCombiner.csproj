@@ -16,17 +16,13 @@
     <RepositoryUrl>https://github.com/jeppevammenkristensen/slnx-combiner.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageReleaseNotes>Version 0.0.6
-
-- Search multiple directories in one combine operation.
-- Include or exclude solution files by filename with case-insensitive regular expressions.
-- Validate regular expressions before file discovery starts.
-- De-duplicate solution files discovered through overlapping traversal paths.
-- Support both direct invocation and the explicit combine command.</PackageReleaseNotes>
+    <PackageReleaseNotes>
+      - Updated internal package references to latest versions
+    </PackageReleaseNotes>
     <PackageIcon>slnx-combine.png</PackageIcon>
     <Copyright>Copyright (c) 2026 Jeppe Roi Kristensen</Copyright>
     <ToolCommandName>slnx-combine</ToolCommandName>
-    <VersionPrefix>0.0.6</VersionPrefix>
+    <VersionPrefix>0.6.1</VersionPrefix>
     <VersionSuffix Condition="'$(Configuration)' == 'Debug'">dev-03</VersionSuffix>
     <PublishAot>false</PublishAot>
   </PropertyGroup>
@@ -34,9 +30,9 @@
   <ItemGroup>
     <None Include="..\..\README.md" Pack="true" PackagePath="\" />
     <None Include="..\..\assets\slnx-combine.png" Pack="true" PackagePath="\" />
-    <PackageReference Include="FileBasedApp.Toolkit" Version="0.21.0" />
+    <PackageReference Include="FileBasedApp.Toolkit" Version="1.0.1" />
     <PackageReference Include="Microsoft.VisualStudio.SolutionPersistence" Version="1.0.52" />
-    <PackageReference Include="TruePath.TestableIO.System.IO" Version="0.16.1" />
+    <PackageReference Include="TruePath.TestableIO.System.IO" Version="1.0.1" />
   </ItemGroup>
 
 </Project>
