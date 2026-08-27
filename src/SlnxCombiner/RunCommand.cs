@@ -1,5 +1,7 @@
 using System.Collections.Immutable;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using FileBasedApp.Toolkit;
 using FileBasedApp.Toolkit.CommandCli;
 using Spectre.Console;
@@ -50,7 +52,18 @@ public class RunCommand : AsyncCommand<RunCommand.Settings> // For sync only you
         [Description("If toggled the output file will be overwritten if it already exists.")]
         public bool Overwrite { get; set; }
         
+        [CommandOption("--include")]
+        [Description("If set this will be the regex filter applied to the solution/project file name.")]
+        public string? Include { get;set; }
         
+        [CommandOption("--exlude")]
+        [Description("If set this will be the regex filter applied to filter away a solution/project file name.")]
+        public string? Exclude { get;set; }
+
+        public Regex? IncludeRegex { get; private set; }
+        public Regex? ExcludeRegex { get; private set; }
+
+
         /// <summary>
         /// Gets the validated absolute path of the directory searched for solution files.
         /// </summary>
@@ -82,8 +95,33 @@ public class RunCommand : AsyncCommand<RunCommand.Settings> // For sync only you
             {
                 TraversePath = [OutputFilePath / ".."];
             }
+
+            IncludeRegex = ValidateAndGetRegex(Include);
+            ExcludeRegex = ValidateAndGetRegex(Exclude);
             
             return base.DoValidate();
+        }
+
+        private Regex? ValidateAndGetRegex(string? pattern, [CallerArgumentExpression(nameof(pattern))] string? parameterName = null)
+        {
+            
+            if (string.IsNullOrWhiteSpace(pattern))
+            {
+                return null;
+            }
+
+            try
+            {
+                return new Regex(pattern, RegexOptions.IgnoreCase);
+            }
+            catch (ArgumentException exception)
+            {
+                throw new ArgumentException(
+                    $"'{pattern}' is not a valid regular expression.",
+                    parameterName,
+                    exception);
+            }
+            
         }
     }
 }
