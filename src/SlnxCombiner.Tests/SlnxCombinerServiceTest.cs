@@ -25,7 +25,7 @@ public class SlnxCombinerServiceTest
             service.Combine(CreateSettings(TestPaths.Absolute("output", "combined.slnx"), traversePath),
                 CancellationToken.None));
 
-        Assert.Equal("No solution files found in this direcotry or it's subdirectories", exception.Message);
+        Assert.Equal("No solution files found in this directory or it's subdirectories", exception.Message);
     }
 
     [Fact]
@@ -58,7 +58,7 @@ public class SlnxCombinerServiceTest
         return new RunCommand.Settings
         {
             OutputFilePath = outputFilePath,
-            TraversePath = traversePath,
+            TraversePath = [traversePath],
         };
     }
 }

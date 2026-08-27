@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.ComponentModel;
 using FileBasedApp.Toolkit;
 using FileBasedApp.Toolkit.CommandCli;
@@ -36,13 +37,14 @@ public class RunCommand : AsyncCommand<RunCommand.Settings> // For sync only you
         /// Gets the validated absolute path of the output file.
         /// </summary>
         public AbsolutePath OutputFilePath { get; internal set; }
-        
+
         /// <summary>
         /// Gets or sets the optional directory to search for solution files.
         /// </summary>
         [CommandArgument(1, "[TraverseDirectory]")]
-        [Description("The directory to traverse for solution files. This is not necessarily the same as the output directory.")]
-        public string? TraverseDirectory { get; set; }
+        [Description(
+            "The directory to traverse for solution files. This is not necessarily the same as the output directory.")]
+        public string[]? TraverseDirectory { get; set; } = [];
         
         [CommandOption("--overwrite")]
         [Description("If toggled the output file will be overwritten if it already exists.")]
@@ -52,7 +54,7 @@ public class RunCommand : AsyncCommand<RunCommand.Settings> // For sync only you
         /// <summary>
         /// Gets the validated absolute path of the directory searched for solution files.
         /// </summary>
-        public AbsolutePath TraversePath { get; internal set; }
+        public ImmutableArray<AbsolutePath> TraversePath { get; internal set; } = ImmutableArray<AbsolutePath>.Empty;
 
         protected override ValidationResult DoValidate()
         {
@@ -64,15 +66,21 @@ public class RunCommand : AsyncCommand<RunCommand.Settings> // For sync only you
                 throw new ArgumentException("An output file is required.", nameof(OutputFile));
             }
 
-            OutputFilePath = this.TryGetFile(OutputFile, shouldExist: false, PredefinedRootPath.CurrentDirectory);
+            OutputFilePath = TryGetFile(OutputFile, shouldExist: false, PredefinedRootPath.CurrentDirectory);
             
-            if (!string.IsNullOrWhiteSpace(TraverseDirectory))
+            if (TraverseDirectory?.Length > 0)
             {
-                TraversePath = this.TryGetDirectory(TraverseDirectory, false, shouldExist: true, PredefinedRootPath.CurrentDirectory); 
+                TraversePath = ImmutableArray<AbsolutePath>.Empty;
+                
+                foreach (var directory in TraverseDirectory)
+                {
+                    var path = TryGetDirectory(directory, false, shouldExist: true, PredefinedRootPath.CurrentDirectory);
+                    TraversePath = TraversePath.Add(path);
+                }
             }
             else
             {
-                TraversePath = OutputFilePath / "..";
+                TraversePath = [OutputFilePath / ".."];
             }
             
             return base.DoValidate();
