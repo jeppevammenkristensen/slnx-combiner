@@ -44,7 +44,7 @@ public class SlnxCombinerServiceTest
     [Fact]
     public void GenerateIncludeFilter_WithoutConfiguredRegex_IncludesPath()
     {
-        var filter = SlnxCombinerService.GenerateIncludeFilter(new RunCommand.Settings());
+        var filter = SlnxCombinerService.GenerateIncludeFilter(new CombineCommand.Settings());
 
         Assert.True(filter(TestPaths.Absolute("solution.slnx")));
     }
@@ -52,7 +52,7 @@ public class SlnxCombinerServiceTest
     [Fact]
     public void GenerateExcludeFilter_WithoutConfiguredRegex_IncludesPath()
     {
-        var filter = SlnxCombinerService.GenerateExcludeFilter(new RunCommand.Settings());
+        var filter = SlnxCombinerService.GenerateExcludeFilter(new CombineCommand.Settings());
 
         Assert.True(filter(TestPaths.Absolute("solution.slnx")));
     }
@@ -97,9 +97,9 @@ public class SlnxCombinerServiceTest
         });
     }
 
-    private static RunCommand.Settings CreateSettings(AbsolutePath outputFilePath, AbsolutePath traversePath)
+    private static CombineCommand.Settings CreateSettings(AbsolutePath outputFilePath, AbsolutePath traversePath)
     {
-        return new RunCommand.Settings
+        return new CombineCommand.Settings
         {
             OutputFilePath = outputFilePath,
             TraversePath = [traversePath],
@@ -119,7 +119,7 @@ public class SlnxCombinerServiceTest
         return settings;
     }
 
-    private sealed class TestSettings : RunCommand.Settings
+    private sealed class TestSettings : CombineCommand.Settings
     {
         public ValidationResult ValidateSettings() => DoValidate();
     }
