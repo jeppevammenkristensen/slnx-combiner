@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using System.IO.Abstractions;
 using System.Xml.Linq;
 using FileBasedApp.Toolkit;
+using SlnxCombiner.Commands;
 using Spectre.Console;
 using TruePath;
 

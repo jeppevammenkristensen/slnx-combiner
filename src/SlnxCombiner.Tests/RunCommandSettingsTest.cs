@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using JetBrains.Annotations;
+using SlnxCombiner.Commands;
 using Spectre.Console;
 using Xunit;
 
