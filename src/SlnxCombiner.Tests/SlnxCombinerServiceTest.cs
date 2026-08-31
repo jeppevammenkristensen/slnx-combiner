@@ -4,6 +4,7 @@ using System.IO.Abstractions.TestingHelpers;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using SlnxCombiner.Commands;
 using Spectre.Console;
 using TruePath;
 using Xunit;

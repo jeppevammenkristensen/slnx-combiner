@@ -10,6 +10,26 @@ using Spectre.Console.Cli;
 using TruePath;
 using FileSystem = System.IO.Abstractions.FileSystem;
 
+namespace SlnxCombiner.Commands;
+
+/// <summary>
+/// Identifies the type of source files discovered by the combine operation.
+/// </summary>
+public enum TypeToCombine
+{
+    /// <summary>
+    /// Find solution files and combine them into a single SLNX file.
+    /// </summary>
+    Solution,
+
+    /// <summary>
+    /// Find project files and combine them into a single SLNX file.
+    /// </summary>
+    Project, 
+    
+    FartPlasma
+}
+
 /// <summary>
 /// Runs the command-line workflow that combines discovered solution files into a single SLNX file.
 /// </summary>
@@ -49,15 +69,20 @@ public class CombineCommand : AsyncCommand<CombineCommand.Settings> // For synch
         [Description(
             "The directory to traverse for solution files. This is not necessarily the same as the output directory.")]
         public string[]? TraverseDirectory { get; set; } = [];
-        
+
         [CommandOption("--overwrite")]
         [Description("If set, the output file will be overwritten if it already exists.")]
         public bool Overwrite { get; set; }
-        
+
+        [CommandOption("--type <TYPE>")]
+        [Description("The type of files to combine.")]
+        [DefaultValue(TypeToCombine.Solution)]
+        public TypeToCombine Type { get; set; } = TypeToCombine.Solution;
+
         [CommandOption("--include")]
         [Description("If set, this regular expression will include matching solution/project file names.")]
         public string? Include { get; set; }
-        
+
         [CommandOption("--exclude")]
         [Description("If set, this regular expression will exclude matching solution/project file names.")]
         public string? Exclude { get; set; }
@@ -81,11 +106,11 @@ public class CombineCommand : AsyncCommand<CombineCommand.Settings> // For synch
             }
 
             OutputFilePath = TryGetFile(OutputFile, shouldExist: false, PredefinedRootPath.CurrentDirectory);
-            
+
             if (TraverseDirectory?.Length > 0)
             {
                 TraversePath = ImmutableArray<AbsolutePath>.Empty;
-                
+
                 foreach (var directory in TraverseDirectory)
                 {
                     var path = TryGetDirectory(directory, false, shouldExist: true, PredefinedRootPath.CurrentDirectory);
@@ -99,13 +124,12 @@ public class CombineCommand : AsyncCommand<CombineCommand.Settings> // For synch
 
             IncludeRegex = ValidateAndGetRegex(Include);
             ExcludeRegex = ValidateAndGetRegex(Exclude);
-            
+
             return base.DoValidate();
         }
 
         private Regex? ValidateAndGetRegex(string? pattern, [CallerArgumentExpression(nameof(pattern))] string? parameterName = null)
         {
-            
             if (string.IsNullOrWhiteSpace(pattern))
             {
                 return null;
@@ -122,7 +146,6 @@ public class CombineCommand : AsyncCommand<CombineCommand.Settings> // For synch
                     parameterName,
                     exception);
             }
-            
         }
     }
 }

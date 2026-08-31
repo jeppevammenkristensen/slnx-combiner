@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.IO.Abstractions;
 using System.Xml.Linq;
 using JetBrains.Annotations;
+using SlnxCombiner.Commands;
 using Spectre.Console;
 using TruePath;
 using Xunit;
