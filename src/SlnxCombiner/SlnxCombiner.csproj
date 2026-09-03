@@ -30,7 +30,7 @@
   <ItemGroup>
     <None Include="..\..\README.md" Pack="true" PackagePath="\" />
     <None Include="..\..\assets\slnx-combine.png" Pack="true" PackagePath="\" />
-    <PackageReference Include="FileBasedApp.Toolkit" Version="1.0.1" />
+    <PackageReference Include="FileBasedApp.Toolkit" Version="1.1.1" />
     <PackageReference Include="Microsoft.VisualStudio.SolutionPersistence" Version="1.0.52" />
     <PackageReference Include="TruePath.TestableIO.System.IO" Version="1.0.1" />
   </ItemGroup>
