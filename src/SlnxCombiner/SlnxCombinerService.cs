@@ -5,6 +5,7 @@ using FileBasedApp.Toolkit;
 using SlnxCombiner.Commands;
 using Spectre.Console;
 using TruePath;
+using PathMatch = (TruePath.AbsolutePath Path, SlnxCombiner.Commands.TypeToCombine Type);
 
 /// <summary>
 /// Discovers solution files and combines their projects into a generated SLNX document.
@@ -38,8 +39,7 @@ public class SlnxCombinerService
         {
             _console.MarkupLineInterpolated(
                 $"File extension must be .slnx. Found {destination.GetExtensionWithoutDot()}. Changed to .slnx");
-            destination = destination / ".." /
-                          $"{destination.GetFilenameWithoutExtension()}.slnx";
+            destination = destination / ".." / $"{destination.GetFilenameWithoutExtension()}.slnx";
         }
 
         if (!settings.Overwrite && _fileSystem.File.Exists(destination.Value))
@@ -53,18 +53,18 @@ public class SlnxCombinerService
             throw new InvalidOperationException("No solution files found in this directory or it's subdirectories");
         }
 
-        OutputSolutionFiles(solutionFiles);
+        OutputMatchedFiles(solutionFiles);
 
         var buildSlnx = await BuildSlnx(solutionFiles, destination / "..");
         await BuildFileFromBuilder(buildSlnx, destination, cancellationToken);
     }
 
-    private void OutputSolutionFiles(AbsolutePath[] solutionFiles)
+    private void OutputMatchedFiles(PathMatch[] solutionFiles)
     {
-        _console.MarkupLineInterpolated($"[green]Found {solutionFiles.Length} solution files[/]");
+        _console.MarkupLineInterpolated($"[green]Found {solutionFiles.Length} files[/]");
         foreach (var solutionFile in solutionFiles)
         {
-            _console.MarkupLineInterpolated($"[dim]{solutionFile.Value}[/]");
+            _console.MarkupLineInterpolated($"[dim]{solutionFile.Path} ({solutionFile.Type})[/]");
         }
     }
 
@@ -77,12 +77,12 @@ public class SlnxCombinerService
     }
 
 
-    private async Task<SlnxBuilder> BuildSlnx(AbsolutePath[] solutionFiles, AbsolutePath root)
+    private async Task<SlnxBuilder> BuildSlnx(PathMatch[] solutionFiles, AbsolutePath root)
     {
         var builder = new SlnxBuilder(root);
 
-        HashSet<string> names = new HashSet<string>();
-        var processed = ConsolidateDuplicateProjects(await ProcessSolution(solutionFiles, root, names).ToListAsync());
+        HashSet<string> names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var processed = ConsolidateDuplicateProjects(await ProcessItems(solutionFiles, root, names));
 
         await ProcessSolutionIt(builder, processed);
 
@@ -92,7 +92,7 @@ public class SlnxCombinerService
     /// <summary>
     /// Moves projects included by multiple source solutions into a shared synthetic group.
     /// </summary>
-    private ImmutableArray<SolutionWrapper> ConsolidateDuplicateProjects(List<SolutionWrapper> solutionWrappers)
+    private ImmutableArray<SolutionWrapper> ConsolidateDuplicateProjects(IReadOnlyList<SolutionWrapper> solutionWrappers)
     {
         var solutionWrapper = new SolutionWrapper("", null, []);
 
@@ -119,29 +119,72 @@ public class SlnxCombinerService
         return solutionWrapper.Empty ? [.. solutionWrappers] : [solutionWrapper, .. solutionWrappers];
     }
 
-    private async IAsyncEnumerable<SolutionWrapper> ProcessSolution(AbsolutePath[] solutionFile,
+    private async Task<SolutionWrapper> ProcessSolution(AbsolutePath destination, HashSet<string> names)
+    {
+        var result = await SolutionParser.ReadSolutionAsync(destination, CancellationToken.None);
+
+        var name = NameUtil.GetName(names, destination);
+
+
+        return new SolutionWrapper(name, destination, result.SolutionProjects.Select(x =>
+        {
+            var filePath = LocalPath.Create(x.FilePath);
+            if (!filePath.IsAbsolute)
+            {
+                filePath = destination / ".." / filePath;
+            }
+
+            return new ProjectReference(AbsolutePath.Create(filePath.Value), x.DisplayName, x.Type);
+        }));
+    }
+    
+    private async Task<IReadOnlyList<SolutionWrapper>> ProcessItems(PathMatch[] pathMatches,
         AbsolutePath destination, HashSet<string> names)
     {
-        foreach (var s in solutionFile)
+        List<ProjectReference> projectReferences = [];
+        List<SolutionWrapper> solutionWrappers = [];
+        
+        foreach (var b in pathMatches)
         {
+            var s = b.Path;
+
             if (s.Equals(destination)) continue;
 
-            var result = await SolutionParser.ReadSolutionAsync(s, CancellationToken.None);
-
-            var name = NameUtil.GetName(names, s);
-
-
-            yield return new SolutionWrapper(name, s, result.SolutionProjects.Select(x =>
+            switch (b.Type)
             {
-                var filePath = LocalPath.Create(x.FilePath);
-                if (!filePath.IsAbsolute)
-                {
-                    filePath = s / ".." / filePath;
-                }
-
-                return new ProjectReference(AbsolutePath.Create(filePath.Value), x.DisplayName, x.Type);
-            }));
+                case TypeToCombine.Solution:
+                    solutionWrappers.Add(await ProcessSolution(s, names));
+                    break;
+                case TypeToCombine.Project:
+                    projectReferences.Add(new ProjectReference(s, null, null));
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
+
+        var processProjectReferences = new List<ProjectReference>();
+        
+        foreach (var references in projectReferences.OrderBy(x => x.ProjectPath.Value)
+                     .GroupBy(x => x.ProjectPath.FileName, StringComparer.OrdinalIgnoreCase))
+        {
+            if (references.Count() > 1)
+            {
+                foreach (var projectReference in references)
+                {
+                    solutionWrappers.Add(new SolutionWrapper(NameUtil.GetName(names,projectReference.ProjectPath), null, [projectReference]));
+                }
+            }
+            else
+            {
+                processProjectReferences.Add(references.First());
+            }
+        }
+
+        
+        
+
+        return [new SolutionWrapper("", null, processProjectReferences), .. solutionWrappers];
     }
 
     private async Task ProcessSolutionIt(SlnxBuilder builder, ImmutableArray<SolutionWrapper> wrappers)
@@ -161,20 +204,40 @@ public class SlnxCombinerService
     }
 
 
-    private AbsolutePath[] FindSolutionFiles(AbsolutePath destinationDirectory, AbsolutePath existingFile,
+    private PathMatch[] FindSolutionFiles(AbsolutePath destinationDirectory, AbsolutePath existingFile,
         CombineCommand.Settings settings)
     {
         var includeFilter = GenerateIncludeFilter(settings);
         var excludeFilter = GenerateExcludeFilter(settings);
 
-        return
-        [
-            .. destinationDirectory.GetAllFiles("*.slnx", _fileSystem)
-                .Concat(destinationDirectory.GetAllFiles("*.sln", _fileSystem))
-                .Where(includeFilter)
-                .Where(excludeFilter)
-                .Where(x => !x.Equals(existingFile))
-        ];
+        
+        switch (settings.Type)
+        {
+            case TypeToCombine.Solution:
+                return
+                [
+                    .. destinationDirectory.GetAllFiles("*.slnx", _fileSystem)
+                        .Concat(destinationDirectory.GetAllFiles("*.sln", _fileSystem))
+                        .Where(includeFilter)
+                        .Where(excludeFilter)
+                        .Where(x => !x.Equals(existingFile))
+                        .Select(x => (x, TypeToCombine.Solution))
+                ];
+            case TypeToCombine.Project:
+                return
+                [
+                    .. destinationDirectory.GetAllFiles("*.csproj", _fileSystem)
+                        .Where(includeFilter)
+                        .Where(excludeFilter)
+                        .Where(x => !x.Equals(existingFile))
+                        .Select(x => (x, TypeToCombine.Project))
+                ];
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+        
+        
+        
     }
 
     internal static Func<AbsolutePath, bool> GenerateExcludeFilter(CombineCommand.Settings settings)

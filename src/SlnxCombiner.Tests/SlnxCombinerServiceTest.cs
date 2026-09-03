@@ -17,6 +17,7 @@ public class SlnxCombinerServiceTest
     [Theory]
     [InlineData("team-app.slnx", true)]
     [InlineData("TEAM-APP.sln", true)]
+    [InlineData("Team-App.csproj", true)]
     [InlineData("other-app.slnx", false)]
     public void GenerateIncludeFilter_WithConfiguredRegex_FiltersByFilenameWithoutExtension(
         string fileName, bool expected)
@@ -31,6 +32,7 @@ public class SlnxCombinerServiceTest
     [Theory]
     [InlineData("team-app.slnx", false)]
     [InlineData("TEAM-APP.sln", false)]
+    [InlineData("Team-App.csproj", false)]
     [InlineData("other-app.slnx", true)]
     public void GenerateExcludeFilter_WithConfiguredRegex_FiltersByFilenameWithoutExtension(
         string fileName, bool expected)

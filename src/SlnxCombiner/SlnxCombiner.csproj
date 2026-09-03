@@ -17,13 +17,13 @@
     <RepositoryType>git</RepositoryType>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageReleaseNotes>
-      - Updated internal package references to latest versions
+      - Support combining slnx or project files
     </PackageReleaseNotes>
     <PackageIcon>slnx-combine.png</PackageIcon>
     <Copyright>Copyright (c) 2026 Jeppe Roi Kristensen</Copyright>
     <ToolCommandName>slnx-combine</ToolCommandName>
-    <VersionPrefix>0.6.1</VersionPrefix>
-    <VersionSuffix Condition="'$(Configuration)' == 'Debug'">dev-03</VersionSuffix>
+    <VersionPrefix>0.7.0</VersionPrefix>
+    <VersionSuffix Condition="'$(Configuration)' == 'Debug'">dev-05</VersionSuffix>
     <PublishAot>false</PublishAot>
   </PropertyGroup>
 
