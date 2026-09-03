@@ -25,9 +25,7 @@ public enum TypeToCombine
     /// <summary>
     /// Find project files and combine them into a single SLNX file.
     /// </summary>
-    Project, 
-    
-    FartPlasma
+    Project
 }
 
 /// <summary>

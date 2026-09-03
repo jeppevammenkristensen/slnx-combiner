@@ -8,8 +8,9 @@ var commandApp = new CommandApp<CombineCommand>().WithDescription(description);
 commandApp.Configure(ctx =>
 {
     ctx.UseAssemblyInformationalVersion();
-    ctx.PropagateExceptions();
+    //ctx.PropagateExceptions();
     ctx.SetHelpProvider(new EnumValueHelpProvider(ctx.Settings, typeof(CombineCommand.Settings)));
     ctx.AddCommand<CombineCommand>("combine").WithDescription(description);
+    
 });
 return await commandApp.RunAsync(args);
